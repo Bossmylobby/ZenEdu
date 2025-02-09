@@ -42,6 +42,7 @@ def send_help(message):
     /help - Эта помощь
     /teachers - Список преподавателей 
     /feedback - Оставить отзыв о преподавателе
+    /view_feedback - Просмотреть отзывы
     """
     bot.reply_to(message, help_text)
 
@@ -87,6 +88,20 @@ def save_feedback(message, teacher):
     with open('feedback.txt', 'a+', encoding="utf-8") as file:
         file.write(f'{teacher}: {message.text}\n\n')
     bot.send_message(message.chat.id, "Ваш отзыв успешно сохранён!")
+
+
+# Команда /view_feedback
+@bot.message_handler(commands=['view_feedback'])
+def view_feedback(message):
+    try:
+        with open('feedback.txt', 'r', encoding="utf-8") as file:
+            feedback_content = file.read()
+        if not feedback_content:
+            bot.send_message(message.chat.id, "Отзывов пока нет.")
+        else:
+            bot.send_message(message.chat.id, "Отзывы:\n" + feedback_content)
+    except FileNotFoundError:
+        bot.send_message(message.chat.id, "Файл с отзывами не найден.")
 
 
 # Обработка нажатий на кнопки
