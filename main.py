@@ -2,7 +2,7 @@ import telebot
 from telebot import types
 
 # Ваш токен, полученный от @BotFather
-API_TOKEN = '7552526610:AAGp2-U726U28Sel59SKTQdHbu7retdljqQ'
+API_TOKEN = '7552526610:AAGp2-U726U28Sel59SKTQdHbu7retdljqQ'  # Замените на ваш реальный токен
 
 # Инициализация бота
 bot = telebot.TeleBot(API_TOKEN)
@@ -41,8 +41,10 @@ def send_help(message):
     /start - Приветствие
     /help - Эта помощь
     /teachers - Список преподавателей 
+    /feedback - Оставить отзыв о преподавателе
     """
     bot.reply_to(message, help_text)
+
 
 # Команда /teachers
 @bot.message_handler(commands=['teachers'])
@@ -59,11 +61,40 @@ def list_teachers(message):
     bot.reply_to(message, f"Доступные преподаватели:\n{teachers_list}", reply_markup=markup)
 
 
+# Команда /feedback
+@bot.message_handler(commands=['feedback'])
+def feedback_command(message):
+    keyboard = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+
+    all_teachers = list(set(list(teachers_prog.keys()) + list(teachers_diz.keys())))
+
+    for teacher in all_teachers:
+        keyboard.add(teacher)
+
+    bot.send_message(message.chat.id, "Выберите преподавателя:", reply_markup=keyboard)
+
+
+# Обработчик выбора преподавателя
+@bot.message_handler(func=lambda message: message.text in set(list(teachers_prog.keys()) + list(teachers_diz.keys())))
+def select_teacher(message):
+    selected_teacher = message.text
+    bot.send_message(message.chat.id, f"Введите ваш отзыв о {selected_teacher}:")
+    bot.register_next_step_handler(message, save_feedback, selected_teacher)
+
+
+# Сохранение отзыва
+def save_feedback(message, teacher):
+    with open('feedback.txt', 'a+', encoding="utf-8") as file:
+        file.write(f'{teacher}: {message.text}\n\n')
+    bot.send_message(message.chat.id, "Ваш отзыв успешно сохранён!")
+
+
 # Обработка нажатий на кнопки
 @bot.callback_query_handler(func=lambda q: q.data == 'home')
 def teachers_home(query):
     bot.edit_message_text("Вы вернулись в главное меню.", query.message.chat.id, query.message.message_id,
                           query.message.reply_markup)
+
 
 # Обработка сообщений
 @bot.message_handler(func=lambda message: True)
