@@ -40,24 +40,9 @@ def send_help(message):
     Доступные команды:
     /start - Приветствие
     /help - Эта помощь
-    /menu - Открыть основное меню
-    /teachers - Список преподавателей
+    /teachers - Список преподавателей 
     """
     bot.reply_to(message, help_text)
-
-
-# Команда /menu
-@bot.message_handler(commands=['menu'])
-def send_menu(message):
-    menu_text = """
-    Основное меню:
-    1. Оставить отзыв
-    2. Посмотреть отзывы
-    3. Учебные материалы
-    Выберите пункт:
-    """
-    bot.reply_to(message, menu_text)
-
 
 # Команда /teachers
 @bot.message_handler(commands=['teachers'])
