@@ -79,7 +79,7 @@ def feedback_command(message):
 @bot.message_handler(func=lambda message: message.text in set(list(teachers_prog.keys()) + list(teachers_diz.keys())))
 def select_teacher(message):
     selected_teacher = message.text
-    bot.send_message(message.chat.id, f"Введите ваш отзыв о {selected_teacher}:")
+    bot.send_message(message.chat.id, f"Введите ваш отзыв о {selected_teacher}:", reply_markup=types.ReplyKeyboardRemove())
     bot.register_next_step_handler(message, save_feedback, selected_teacher)
 
 
@@ -87,7 +87,7 @@ def select_teacher(message):
 def save_feedback(message, teacher):
     with open('feedback.txt', 'a+', encoding="utf-8") as file:
         file.write(f'{teacher}: {message.text}\n\n')
-    bot.send_message(message.chat.id, "Ваш отзыв успешно сохранён!")
+    bot.send_message(message.chat.id, "Ваш отзыв успешно сохранён!", reply_markup=types.ReplyKeyboardRemove())
 
 
 # Команда /view_feedback
@@ -102,7 +102,6 @@ def view_feedback(message):
             bot.send_message(message.chat.id, "Отзывы:\n" + feedback_content)
     except FileNotFoundError:
         bot.send_message(message.chat.id, "Файл с отзывами не найден.")
-
 
 # Обработка нажатий на кнопки
 @bot.callback_query_handler(func=lambda q: q.data == 'home')
