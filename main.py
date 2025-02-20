@@ -1,13 +1,11 @@
 import telebot
 from telebot import types
+#токен бота
+API_TOKEN = '7552526610:AAGp2-U726U28Sel59SKTQdHbu7retdljqQ'
 
-# Ваш токен, полученный от @BotFather
-API_TOKEN = '7552526610:AAGp2-U726U28Sel59SKTQdHbu7retdljqQ'  # Замените на ваш реальный токен
-
-# Инициализация бота
 bot = telebot.TeleBot(API_TOKEN)
 
-# Учителя в группах
+# Учителя в группе Программисты
 teachers_prog = {
     'Харченко Никита Леонидович😎': 'Преподаватель введения в специальность и программирования на Python.',
     'Пташинский Игорь Андреевич🧔🏻‍♂️': 'Преподаватель истории и обществознания.',
@@ -46,8 +44,34 @@ def send_help(message):
     /teachers - Список преподавателей 
     /feedback - Оставить отзыв о преподавателе
     /view_feedback - Просмотреть отзывы
+    /resources - полезные ресурсы для обучения
     """
     bot.reply_to(message, help_text)
+
+
+# Команда /resources
+@bot.message_handler(commands=['resources'])
+def resources_command(message):
+    resources_text = """
+    Полезные ресурсы для обучения:
+
+    Программисты:
+    1. Coursera - https://www.coursera.org/
+    2. Codecademy - https://www.codecademy.com/
+    3. Udemy - https://www.udemy.com/
+    4. RealPython - https://realpython.com/
+    5. GitHub - https://github.com/
+
+    Дизайнеры:
+    1. Canva - https://www.canva.com/
+    2. Adobe Creative Cloud - https://www.adobe.com/creativecloud.html
+    3. Behance - https://www.behance.net/
+    4. Dribbble - https://dribbble.com/
+    5. Skillshare - https://www.skillshare.com/
+    """
+
+    bot.reply_to(message, resources_text)
+
 
 
 # Команда /teachers
