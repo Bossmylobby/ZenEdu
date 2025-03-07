@@ -1,11 +1,13 @@
 import telebot
 from telebot import types
-#токен бота
+import requests
+
+#токен нашего бота
 API_TOKEN = '7552526610:AAGp2-U726U28Sel59SKTQdHbu7retdljqQ'
 
 bot = telebot.TeleBot(API_TOKEN)
 
-# Учителя в группе Программисты
+# преподы в группе Программисты
 teachers_prog = {
     'Харченко Никита Леонидович😎': 'Преподаватель введения в специальность и программирования на Python.',
     'Пташинский Игорь Андреевич🧔🏻‍♂️': 'Преподаватель истории и обществознания.',
@@ -17,7 +19,7 @@ teachers_prog = {
 
 }
 
-# Учителя в группе "Дизайнеры"
+# преподы в группе "Дизайнеры"
 teachers_diz = {
     'Потякина Валерия Андреевна🐈': 'Преподаватель математики, ОИТ, информатики.',
     'Игнатенко Екатерина Алексеевна✝️': 'Преподаватель истории искусств',
@@ -28,13 +30,13 @@ teachers_diz = {
 }
 
 
-# Команда /start
-@bot.message_handler(commands=['start'])
-def send_welcome(message):
-    bot.reply_to(message, f"Привет, {message.from_user.first_name}! Я твой помощник. Чем могу помочь?")
+# /start
+#@bot.message_handler(commands=['start'])
+#def send_welcome(message):
+    #bot.reply_to(message, f"Привет, {message.from_user.first_name}! Я твой помощник. Чем могу помочь?")
 
 
-# Команда /help
+# /help
 @bot.message_handler(commands=['help'])
 def send_help(message):
     help_text = """
@@ -49,7 +51,7 @@ def send_help(message):
     bot.reply_to(message, help_text)
 
 
-# Команда /resources
+# /resources
 @bot.message_handler(commands=['resources'])
 def resources_command(message):
     resources_text = """
@@ -74,7 +76,56 @@ def resources_command(message):
 
 
 
-# Команда /teachers
+
+# URL API для авторизации на сайте колледжа
+API_AUTH_URL = "https://journal.top-academy.ru/api/auth/login"  # Замените на реальный URL
+
+# Словарь для хранения данных пользователей (в реальном проекте используйте базу данных)
+user_data = {}
+
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    bot.reply_to(message, "Привет! Введите ваш логин и пароль в формате: логин:пароль")
+
+@bot.message_handler(func=lambda message: True)
+def handle_message(message):
+    try:
+        # Проверяем, что ввод содержит двоеточие
+        if ':' not in message.text:
+            bot.reply_to(message, "Пожалуйста, введите данные в формате: логин:пароль")
+            return
+
+        # Разделяем логин и пароль
+        login, password = message.text.split(':', maxsplit=1)
+
+        # Отправляем запрос на API для авторизации
+        response = requests.post(API_AUTH_URL, json={'login': login, 'password': password})
+
+        # Проверяем ответ от API
+        if response.status_code == 200:
+            # Если авторизация успешна, сохраняем токен
+            auth_token = response.json().get('token')
+            user_data[message.chat.id] = auth_token
+            bot.reply_to(message, "Авторизация успешна! Теперь вы можете использовать бота.")
+        else:
+            # Если авторизация не удалась, выводим сообщение об ошибке
+            error_message = response.json().get('message', 'Ошибка авторизации. Проверьте ваш логин и пароль.')
+            bot.reply_to(message, f"Ошибка: {error_message}")
+    except Exception as e:
+        bot.reply_to(message, f"Произошла ошибка: {e}")
+
+# Пример команды, которая требует авторизации
+@bot.message_handler(commands=['protected'])
+def protected_command(message):
+    if message.chat.id in user_data:
+        # Используем токен для авторизованного запроса
+        auth_token = user_data[message.chat.id]
+        bot.reply_to(message, f"Вы авторизованы! Ваш токен: {auth_token}")
+    else:
+        bot.reply_to(message, "Вы не авторизованы. Пожалуйста, авторизуйтесь.")
+
+
+#  /teachers
 @bot.message_handler(commands=['teachers'])
 def list_teachers(message):
     teachers_list = ""
@@ -89,7 +140,7 @@ def list_teachers(message):
     bot.reply_to(message, f"Доступные преподаватели:\n{teachers_list}", reply_markup=markup)
 
 
-# Команда /feedback
+#  /feedback
 @bot.message_handler(commands=['feedback'])
 def feedback_command(message):
     keyboard = types.ReplyKeyboardMarkup(one_time_keyboard=True)
@@ -117,7 +168,7 @@ def save_feedback(message, teacher):
     bot.send_message(message.chat.id, "Ваш отзыв успешно сохранён!", reply_markup=types.ReplyKeyboardRemove())
 
 
-# Команда /view_feedback
+# /view_feedback
 @bot.message_handler(commands=['view_feedback'])
 def view_feedback(message):
     try:
@@ -142,29 +193,6 @@ def teachers_home(query):
 def echo_all(message):
     bot.reply_to(message, "Не понял ваше сообщение. Попробуйте ещё раз.")
 
-
-# Команда /resources
-@bot.message_handler(commands=['resources'])
-def resources_command(message):
-    resources_text = """
-    Полезные ресурсы для групп:
-
-    Программисты:
-    💡 Введение в программирование на Python: https://www.python.org/
-    💡 Основы алгоритмов: https://ru.wikipedia.org/wiki/Алгоритм
-    💡 Практические задачи по Python: https://leetcode.com/
-    💡 Официальный сайт Microsoft для изучения Windows 10: https://docs.microsoft.com/en-us/windows/
-
-    Дизайнеры:
-    🖌 Основы дизайна: https://www.canva.com/learn/design-basics/
-    🖌 История искусства: https://www.khanacademy.org/humanities/art-history
-    🖌 Основы работы в Adobe Photoshop: https://helpx.adobe.com/photoshop/tutorials.html
-    🖌 География и дизайн: https://www.nationalgeographic.com/magazine/
-
-    Эти ресурсы помогут вам лучше освоить ваши специальности. Удачи в обучении!
-    """
-
-    bot.reply_to(message, resources_text)
 
 # Запуск бота
 if __name__ == '__main__':
