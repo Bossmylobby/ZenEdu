@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 
 # Токен бота
-API_TOKEN = '7552526610:AAGp2-U726U28Sel59SKTQdHbu7retdljqQ'
+API_TOKEN = ''
 
 bot = telebot.TeleBot(API_TOKEN)
 
